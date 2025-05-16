@@ -1,0 +1,111 @@
+name: AI Agent for software testing
+description: 'Runs AI Agent for software testing'
+branding:
+  icon: 'fast-forward'
+  color: 'purple'
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v4
+
+    - name: Install dependencies
+      shell: bash
+      run: |
+        npm install --prefer-offline --no-audit
+        npx playwright install ffmpeg
+
+    - name: Set analysis suite parameters & test case to run
+      shell: bash
+      run: |
+        if [ -n "${{ github.event.client_payload.analysisSuiteUuid }}" ]; then
+          echo "WOPEE_ANALYSIS_SUITE_UUID=${{ github.event.client_payload.analysisSuiteUuid }}" >> $GITHUB_ENV
+        fi
+
+        if [ -n "${{ github.event.client_payload.suite.name }}" ]; then
+          echo "WOPEE_SUITE_NAME=${{ github.event.client_payload.suite.name }}" >> $GITHUB_ENV
+        fi
+
+        if [ -n "${{ github.event.client_payload.suite.uuid }}" ]; then
+          echo "WOPEE_SUITE_UUID=${{ github.event.client_payload.suite.uuid }}" >> $GITHUB_ENV
+
+          if [ "${{ github.event.action }}" = "crawl" ]; then
+            echo "WOPEE_ANALYSIS_SUITE_UUID=${{ github.event.client_payload.suite.uuid }}" >> $GITHUB_ENV
+          fi
+        fi
+
+        if [ -n "${{ github.event.client_payload.testCase.testCaseId }}" ]; then
+          echo "WOPEE_TEST_CASE_ID=${{ github.event.client_payload.testCase.testCaseId }}" >> $GITHUB_ENV
+        fi
+
+        if [ -n "${{ github.event.client_payload.testCase.userStoryId }}" ]; then
+          echo "WOPEE_USER_STORY_ID=${{ github.event.client_payload.testCase.userStoryId }}" >> $GITHUB_ENV
+        fi
+
+    - name: Run agent
+      shell: bash
+      run: wopee_agent
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: playwright-results
+        path: |
+          /tmp/test-results
+          /tmp/playwright-report
+        retention-days: 1
+
+    - name: Confirm end of run
+      if: always()
+      shell: bash
+      run: |
+
+        ERROR_FLAG=false
+        if [ "${{ job.status }}" = "failure" ]; then
+          ERROR_FLAG=true
+        fi
+
+
+        if [ "${{ github.event.action }}" = "crawl" ]; then
+
+          JSON_PAYLOAD=$(cat <<-EOF
+          {
+            "query": "mutation PostProcessAnalysisSuite(\$input: PostProcessAnalysisSuiteInput!) { postProcessAnalysisSuite(input: \$input) }",
+            "variables": {
+              "input": {
+                "error": $ERROR_FLAG,
+                "projectUuid": "${{ env.WOPEE_PROJECT_UUID }}",
+                "suiteUuid": "${{ env.WOPEE_SUITE_UUID }}"
+              }
+            }
+          }
+        EOF
+          )
+
+        else
+
+          JSON_PAYLOAD=$(cat <<-EOF
+          {
+            "query": "mutation PostProcessAgentSuite(\$input: PostProcessAgentSuiteInput!) { postProcessAgentSuite(input: \$input) }",
+            "variables": {
+              "input": {
+                "error": $ERROR_FLAG,
+                "projectUuid": "${{ env.WOPEE_PROJECT_UUID }}",
+                "suiteUuid": "${{ env.WOPEE_SUITE_UUID }}",
+                "testCase": {
+                  "testCaseId": "${{ env.WOPEE_TEST_CASE_ID }}",
+                  "userStoryId": "${{ env.WOPEE_USER_STORY_ID }}"
+                }
+              }
+            }
+          }
+        EOF
+          )
+        fi
+
+        curl --request POST \
+          --header 'content-type: application/json' \
+          --header 'api_key: ${{ env.WOPEE_API_KEY }}' \
+          --url '${{ env.WOPEE_API_URL }}' \
+          --data "$JSON_PAYLOAD"

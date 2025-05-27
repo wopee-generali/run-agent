@@ -19,6 +19,8 @@ runs:
       if: github.event.client_payload.env
       shell: bash
       run: |
+        tmpfile=$(mktemp)
+        printf '%s\n' "${{ toJson(github.event.client_payload.env) }}" > "$tmpfile"
         jq -r '
           to_entries[]
           | select(.value != null)
@@ -26,7 +28,8 @@ runs:
               then "\(.key)<<EOF\n\(.value)\nEOF"
               else "\(.key)=\(.value)"
             end
-        ' <<< "${{ toJson(github.event.client_payload.env) }}" >> "$GITHUB_ENV"
+        ' "$tmpfile" >> "$GITHUB_ENV"
+        rm "$tmpfile"
 
     - name: Load .github/workflows/.env → $GITHUB_ENV
       shell: bash

@@ -12,8 +12,8 @@ runs:
     - name: Set default values for environment variables
       shell: bash
       run: |
-        echo "WOPEE_SCREENSHOT_VALIDATION_ENABLED=${{ env.WOPEE_SCREENSHOT_VALIDATION_ENABLED || "true" }}" >> $GITHUB_ENV
-        echo "WOPEE_COLLECT_PAGE_CONTENT=${{ env.WOPEE_COLLECT_PAGE_CONTENT || "true" }}" >> $GITHUB_ENV
+        echo "WOPEE_SCREENSHOT_VALIDATION_ENABLED=${WOPEE_SCREENSHOT_VALIDATION_ENABLED:-true}" >> $GITHUB_ENV
+        echo "WOPEE_COLLECT_PAGE_CONTENT=${WOPEE_COLLECT_PAGE_CONTENT:-true}" >> $GITHUB_ENV
 
     - name: Load client_payload.env → $GITHUB_ENV
       if: github.event.client_payload.env

@@ -26,7 +26,7 @@ runs:
               then "\(.key)<<EOF\n\(.value)\nEOF"
               else "\(.key)=\(.value)"
             end
-        ' <<< '${{ toJson(github.event.client_payload.env) }}' >> "$GITHUB_ENV"
+        ' <<< "${{ toJson(github.event.client_payload.env) }}" >> "$GITHUB_ENV"
 
     - name: Load .github/workflows/.env → $GITHUB_ENV
       shell: bash

@@ -19,6 +19,7 @@ runs:
       if: github.event.client_payload.env
       shell: bash
       run: |
+        echo ${{ toJson(github.event.client_payload.env) }}
         jq -r 'to_entries[]|"\(.key)=\(.value)"' <<< '${{ toJson(github.event.client_payload.env) }}' >> "$GITHUB_ENV"
 
     - name: Load .github/workflows/.env → $GITHUB_ENV

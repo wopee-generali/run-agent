@@ -19,6 +19,8 @@ runs:
       if: github.event.client_payload.env
       shell: bash
       run: |
+        echo "GITHUB_EVENT_PATH=$GITHUB_EVENT_PATH"
+        cat "$GITHUB_EVENT_PATH"
         jq -r '
           .client_payload.env
           | to_entries[]

@@ -1,8 +1,8 @@
 name: AI Agent for software testing
-description: 'Runs AI Agent for software testing'
+description: "Runs AI Agent for software testing"
 branding:
-  icon: 'fast-forward'
-  color: 'purple'
+  icon: "fast-forward"
+  color: "purple"
 
 runs:
   using: "composite"
@@ -57,6 +57,16 @@ runs:
           /tmp/playwright-report
         retention-days: 1
 
+    - name: Export Test Report to WOPEE_AGENT_REPORT
+      shell: bash
+      run: |
+        if [ -f "test-results/report.md" ]; then
+          REPORT_CONTENT=$(cat test-results/report.md | sed ':a;N;$!ba;s/\n/\\n/g' | sed 's/"/\\"/g')
+          echo "WOPEE_AGENT_REPORT=\"$REPORT_CONTENT\"" >> $GITHUB_ENV
+        else
+          echo "⚠️ test-results/report.md not found"
+        fi
+
     - name: Confirm end of run
       if: always()
       shell: bash
@@ -94,6 +104,7 @@ runs:
                 "error": $ERROR_FLAG,
                 "projectUuid": "${{ env.WOPEE_PROJECT_UUID }}",
                 "suiteUuid": "${{ env.WOPEE_SUITE_UUID }}",
+                "agentReport": "${{ env.WOPEE_AGENT_REPORT }}",
                 "testCase": {
                   "testCaseId": "${{ env.WOPEE_TEST_CASE_ID }}",
                   "userStoryId": "${{ env.WOPEE_USER_STORY_ID }}"

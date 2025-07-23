@@ -64,7 +64,7 @@ runs:
           REPORT_CONTENT=$(cat test-results/report.md | sed ':a;N;$!ba;s/\n/\\n/g' | sed 's/"/\\"/g')
           echo "WOPEE_AGENT_REPORT=\"$REPORT_CONTENT\"" >> $GITHUB_ENV
         else
-          echo "❌ test-results/report.md not found"
+          echo "⚠️ test-results/report.md not found"
         fi
 
     - name: Confirm end of run

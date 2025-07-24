@@ -92,6 +92,7 @@ runs:
       run: |
         if [ -f "/tmp/test-results/report.md" ]; then
           REPORT_CONTENT=$(jq -Rs . /tmp/test-results/report.md)
+          cat /tmp/test-results/report.md
           echo $REPORT_CONTENT
           echo "WOPEE_AGENT_REPORT=$REPORT_CONTENT" >> $GITHUB_ENV
         else

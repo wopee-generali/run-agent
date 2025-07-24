@@ -92,7 +92,7 @@ runs:
       run: |
         if [ -f "/tmp/test-results/report.md" ]; then
           REPORT_CONTENT=$(jq -Rs . /tmp/test-results/report.md)
-          echo "WOPEE_AGENT_REPORT=\"$REPORT_CONTENT\"" >> $GITHUB_ENV
+          echo "WOPEE_AGENT_REPORT=$REPORT_CONTENT" >> $GITHUB_ENV
         else
           echo "⚠️ /tmp/test-results/report.md not found"
         fi
@@ -134,7 +134,7 @@ runs:
                 "error": $ERROR_FLAG,
                 "projectUuid": "${{ env.WOPEE_PROJECT_UUID }}",
                 "suiteUuid": "${{ env.WOPEE_SUITE_UUID }}",
-                "agentReport": "${{ env.WOPEE_AGENT_REPORT }}",
+                "agentReport": ${{ env.WOPEE_AGENT_REPORT }},
                 "testCase": {
                   "testCaseId": "${{ env.WOPEE_TEST_CASE_ID }}",
                   "userStoryId": "${{ env.WOPEE_USER_STORY_ID }}"

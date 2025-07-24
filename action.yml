@@ -97,6 +97,11 @@ runs:
           echo "⚠️ /tmp/test-results/report.md not found"
         fi
 
+    - name: echo report
+      shell: bash
+      run: |
+        echo $WOPEE_AGENT_REPORT
+
     - name: Confirm end of run
       if: always()
       shell: bash

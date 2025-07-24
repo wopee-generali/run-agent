@@ -90,7 +90,7 @@ runs:
     - name: Export Test Report to WOPEE_AGENT_REPORT
       shell: bash
       run: |
-        if [ -f "test-results/report.md" ]; then
+        if [ -f "/tmp/test-results/report.md" ]; then
           REPORT_CONTENT=$(cat test-results/report.md | sed ':a;N;$!ba;s/\n/\\n/g' | sed 's/"/\\"/g')
           echo "WOPEE_AGENT_REPORT=\"$REPORT_CONTENT\"" >> $GITHUB_ENV
         else

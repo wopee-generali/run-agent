@@ -106,7 +106,8 @@ runs:
         echo $WOPEE_AGENT_REPORT
 
     - name: Post-process suites if agent did not run
-      if: failure() && steps.run_agent.outcome == 'skipped'
+      if: failure() && steps.run_agent.outcome != 'success'
+
       shell: bash
       run: |
         ERROR_FLAG=true
